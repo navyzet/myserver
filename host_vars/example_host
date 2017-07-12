@@ -1,0 +1,23 @@
+#mysql
+mysql_root_password: CHANGE_PASS
+mysql_bind_address: "127.0.0.1"
+
+#vpn
+openvpn_server_network: "10.11.0.0"
+clients:
+  - client
+openvpn_redirect_gateway: false
+client_config_dir: true
+openvpn_client_register_dns: false
+
+#zabbix
+zabbix_url: zabbix.CHANGE_DOMAIN.COM
+zabbix_timezone: Europe/Kaliningrad
+database_type: mysql
+server_dbname: zabbix-db-user
+server_dbuser: zabbix-db
+server_dbpassword: CHANGE_PASS
+database_type_long: mysql
+server_dbport: 3306
+server_startpollers: 2
+server_starttrappers: 1

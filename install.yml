@@ -1,0 +1,125 @@
+- hosts: navyzet.com
+
+  gather_facts: true
+
+  roles:
+    - {role: geerlingguy.apache}
+    - {role: geerlingguy.mysql}
+    - {role: navyzet.openvpn}
+    - {role: dj-wasabi.zabbix-server}
+    - {role: kamaln7.swapfile}
+
+  tasks:
+  - name: "Permanent ip addres for miner"
+    shell: 'echo "ifconfig-push 10.11.0.69 10.11.0.70" > /etc/openvpn/ccd/OpenVPN-Client-{{inventory_hostname}}-miner'
+
+  - name: Disable SELinux
+    selinux:
+      state: disabled
+
+  - name: Open http port public zone
+    firewalld:
+      zone: public
+      service: http
+      permanent: true
+      state: enabled
+      immediate: true
+
+  - name: Open https port public zone
+    firewalld:
+      zone: public
+      service: https
+      permanent: true
+      state: enabled
+      immediate: true
+
+  - name: Open http port external zone
+    firewalld:
+      zone: external
+      service: http
+      permanent: true
+      state: enabled
+      immediate: true
+
+  - name: Open https port external zone
+    firewalld:
+      zone: external
+      service: https
+      permanent: true
+      state: enabled
+      immediate: true
+
+  - name: Open zabbix port external zone
+    firewalld:
+      zone: external
+      port: 10051/tcp
+      permanent: true
+      state: enabled
+      immediate: true
+
+  - name: Create gdrive folder
+    file:
+      path: /opt/gdrive
+      state: directory
+      mode: 0755
+
+  - name: Copy gdrive
+    copy:
+      src: files/gdrive-linux-x64
+      dest: /opt/gdrive/gdrive
+      mode: 0755
+
+  - name: Create gdrive config folder
+    file:
+      path: /root/.gdrive
+      state: directory
+      mode: 0755
+
+  - name: Copy gdrive auth file
+    copy:
+      src: files/gdrive_token_v2.json
+      dest: /root/.gdrive/token_v2.json
+      mode: 0600
+
+  - name: Create backup script
+    template:
+      src: templates/backup_mysql.sh
+      dest: /usr/local/sbin/backup_mysql.sh
+      mode: 0755
+
+
+# Install addition software
+
+  - name: Install vim
+    yum:
+      name: vim
+
+  - name: Install mc
+    yum:
+      name: mc
+
+  - name: Install rsync
+    yum:
+      name: rsync
+
+  - name: Install bc
+    yum:
+      name: bc
+
+  - name: Create alert to telegram script
+    template:
+      src: templates/zabbix-to-telegram.sh
+      dest: /usr/lib/zabbix/alertscripts/zabbix-to-telegram.sh
+      mode: 0755
+
+  - name: Create external weather script
+    template:
+      src: templates/weather.sh
+      dest: /usr/lib/zabbix/externalscripts/weather.sh
+      mode: 0755
+
+  - name: Create external ethermine script
+    template:
+      src: templates/ethermine.sh
+      dest: /usr/lib/zabbix/externalscripts/ethermine_new.sh
+      mode: 0755
